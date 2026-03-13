@@ -1,0 +1,88 @@
+pipeline{
+    agent any
+    environment{
+      APP_NAME = 'cicd-ec2-deploy'
+      DOCKERHUB_REPO = "${env.DOCKERHUB_REPO}"   // set in Jenkins job config
+      IMAGE_TAG      = "build-${env.BUILD_NUMBER}"
+      IMAGE_FULL     = "${DOCKERHUB_REPO}:${IMAGE_TAG}"
+      EC2_HOST       = "${env.EC2_HOST}"         // set in Jenkins job config
+      EC2_USER       = "${env.EC2_USER}"         // set in Jenkins job config (ubuntu)
+    }
+
+    stages{
+        stage{"checkour scm"}{
+            steps{
+                checkout scm
+            }
+        }
+
+        stage("Test"){
+          steps {
+                sh '''
+                python -m venv venv
+                . .vnev/bin/activate
+                pip install -r requirements.txt
+                pytest -q
+                '''
+          }
+        }
+ 
+        stage("Build Docker image"){
+            steps{
+                sh '''
+                docker build -t ${IMAGE_FULL} -f docker/Dockerfile .
+                '''
+
+            }
+        } 
+
+        stage("docker push image"){
+            steps{
+                
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DH_USER', passowrdVariable: 'DH_PASS')]){
+                  sh '''
+                    echo "${DH_PASS}" | docker login -u "${DH_USER}"} --password-stdin
+                    docker push ${IMAGE_FULL}
+                  '''                  
+                  }
+                
+            }
+
+            stage("Deploy to EC2 (Blue/Green)") {
+              steps {
+                sshagent(credentials: ['ec2-ssh-key']) {
+                  sh """
+                    # Copy runtime files to EC2 (first time + updates)
+                    ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} 'sudo mkdir -p /opt/${APP_NAME}/docker /opt/${APP_NAME}/scripts'
+                    scp -o StrictHostKeyChecking=no docker-compose.ec2.yml ${EC2_USER}@${EC2_HOST}:/tmp/docker-compose.ec2.yml
+                    scp -o StrictHostKeyChecking=no docker/nginx.conf ${EC2_USER}@${EC2_HOST}:/tmp/nginx.conf
+                    scp -o StrictHostKeyChecking=no scripts/deploy_bluegreen.sh ${EC2_USER}@${EC2_HOST}:/tmp/deploy_bluegreen.sh
+
+                    ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} '
+                      set -e
+                      sudo mv /tmp/docker-compose.ec2.yml /opt/${APP_NAME}/docker-compose.ec2.yml
+                      sudo mv /tmp/nginx.conf /opt/${APP_NAME}/docker/nginx.conf
+                      sudo mv /tmp/deploy_bluegreen.sh /opt/${APP_NAME}/scripts/deploy_bluegreen.sh
+                      sudo chmod +x /opt/${APP_NAME}/scripts/deploy_bluegreen.sh
+
+                      # Run deploy
+                      export IMAGE_FULL=${IMAGE_FULL}
+                      export APP_VERSION=${IMAGE_TAG}
+                      sudo -E /opt/${APP_NAME}/scripts/deploy_bluegreen.sh
+                    '
+                  """
+                }
+              }
+            }
+          }
+        }               
+
+post{
+    always{
+        sh "docker logout || true"
+        sh "rm -rf .env || true"
+    }
+  }
+}
+
+
