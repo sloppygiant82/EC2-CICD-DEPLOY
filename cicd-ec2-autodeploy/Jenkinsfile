@@ -51,12 +51,17 @@ pipeline{
 
         stage("Deploy to EC2 (Blue/Green)") {
             steps {
-                sshagent(credentials: ['ec2-ssh-key']) {
+                withCredentials([sshUserPrivateKey(
+            credentialsId: 'ec2-ssh-key',
+            keyFileVariable: 'SSH_KEY_FILE',
+            usernameVariable: 'SSH_USER'
+                )])
+                {
                   sh"""
                     # Copy runtime files to EC2 (first time + updates)
-                    ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} 'sudo mkdir -p /opt/${APP_NAME}/docker /opt/${APP_NAME}/scripts'
-                    scp -o StrictHostKeyChecking=no cicd-ec2-autodeploy/docker-compose.ec2.yml ${EC2_USER}@${EC2_HOST}:/tmp/docker-compose.ec2.yml
-                    scp -o StrictHostKeyChecking=no cicd-ec2-autodeploy/docker/nginx.conf ${EC2_USER}@${EC2_HOST}:/tmp/nginx.conf
+                    ssh -o StrictHostKeyChecking=no ${SSH_USER}@${EC2_HOST} 'sudo mkdir -p /opt/${APP_NAME}/docker /opt/${APP_NAME}/scripts'
+                    scp -o StrictHostKeyChecking=no cicd-ec2-autodeploy/docker-compose.ec2.yml ${SSH_USER}@${EC2_HOST}:/tmp/docker-compose.ec2.yml
+                    scp -o StrictHostKeyChecking=no cicd-ec2-autodeploy/docker/nginx.conf ${SSH_USER}@${EC2_HOST}:/tmp/nginx.conf
                     scp -o StrictHostKeyChecking=no cicd-ec2-autodeploy/scripts/deploy_bluegreen.sh ${EC2_USER}@${EC2_HOST}:/tmp/deploy_bluegreen.sh
 
                     ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} '
