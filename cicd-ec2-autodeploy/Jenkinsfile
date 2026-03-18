@@ -21,8 +21,8 @@ pipeline{
                 bat '''
                 python -m venv .venv
                 . .venv/bin/activate
-                pip install -r app/requirements.txt
-                pytest -q
+                pip install -r app/requirements.txt --quiet
+                python -m pytest -q
                 '''
           }
         }
