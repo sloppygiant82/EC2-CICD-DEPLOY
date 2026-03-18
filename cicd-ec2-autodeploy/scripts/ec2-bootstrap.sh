@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-sudo apt get  update -y
+sudo apt-get  update -y
 sudo apt-get install -y ca-certificates curl gnupg lsb-release
 
 sudo install -m 0755 -d /etc/apt/keyrings
@@ -17,5 +17,3 @@ sudo apt-get update -y
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 sudo usermod -aG docker "$USER"
-
-echo "Done. Re-login to apply docker group membership."
