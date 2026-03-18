@@ -84,6 +84,5 @@ post{
         sh "rm -rf .env || true"
     }
   }
-}
 
 
