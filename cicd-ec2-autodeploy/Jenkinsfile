@@ -19,8 +19,8 @@ pipeline{
         stage("Test"){
           steps {
                 sh '''
-                python -m venv venv
-                . venv/bin/activate
+                python -m venv .venv
+                . .venv/bin/activate
                 pip install -r app/requirements.txt
                 pytest -q
                 '''
