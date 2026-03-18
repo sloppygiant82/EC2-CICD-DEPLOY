@@ -21,7 +21,7 @@ pipeline{
                 bat '''
                 python -m venv .venv
                 . .venv/bin/activate
-                pip install -r cicd-ec2-deploy/app/requirements.txt --quiet
+                pip install -r cicd-ec2-autodeploy/app/requirements.txt --quiet
                 python -m pytest -q
                 '''
           }
