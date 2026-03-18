@@ -17,14 +17,8 @@ pipeline{
         }
 
         stage("Test"){
-          agent {
-            docker {
-                image 'python:3.12-slim'
-                args '--user root'
-            }
-          }
           steps {
-                sh '''
+                bat '''
                 python -m venv .venv
                 . .venv/bin/activate
                 pip install -r app/requirements.txt
@@ -35,7 +29,7 @@ pipeline{
  
         stage("Build Docker image"){
             steps{
-                sh '''
+                bat '''
                 docker build -t ${IMAGE_FULL} -f docker/Dockerfile .
                 '''
 
