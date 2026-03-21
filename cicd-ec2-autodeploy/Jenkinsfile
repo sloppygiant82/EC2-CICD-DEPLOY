@@ -55,14 +55,15 @@ pipeline{
             
             // Windows Jenkins runs bat with %VAR% for local ssh/scp commands
             bat """
-                icacls %SSH_KEY_FILE% /inheritance:r
+                 icacls %SSH_KEY_FILE% /inheritance:r
                 icacls %SSH_KEY_FILE% /grant:r "%USERNAME%:R"
                 icacls %SSH_KEY_FILE% /remove "BUILTIN\\Users"
                 icacls %SSH_KEY_FILE% /remove "Everyone"
                 icacls %SSH_KEY_FILE% /grant:r "SYSTEM:F"
                 icacls %SSH_KEY_FILE% /grant:r "BUILTIN\\Administrators:F"
 
-                ssh -o StrictHostKeyChecking=no -i %SSH_KEY_FILE% %EC2_USER%@%EC2_HOST% ^
+                ssh -o StrictHostKeyChecking=no -i %SSH_KEY_FILE% ^
+                    %EC2_USER%@%EC2_HOST% ^
                     "sudo mkdir -p /opt/%APP_NAME%/docker /opt/%APP_NAME%/scripts"
 
                 scp -o StrictHostKeyChecking=no -i %SSH_KEY_FILE% ^
@@ -77,18 +78,10 @@ pipeline{
                     cicd-ec2-autodeploy/scripts/deploy_bluegreen.sh ^
                     %EC2_USER%@%EC2_HOST%:/tmp/deploy_bluegreen.sh
 
-                ssh -o StrictHostKeyChecking=no -i %SSH_KEY_FILE% %EC2_USER%@%EC2_HOST% "^
-                    set -e && ^
-                    sudo apt-get install -y dos2unix -qq && ^
-                    sudo mv /tmp/docker-compose.ec2.yml /opt/%APP_NAME%/docker-compose.ec2.yml && ^
-                    sudo mv /tmp/nginx.conf             /opt/%APP_NAME%/docker/nginx.conf && ^
-                    sudo mv /tmp/deploy_bluegreen.sh    /opt/%APP_NAME%/scripts/deploy_bluegreen.sh && ^
-                    sudo dos2unix                       /opt/%APP_NAME%/scripts/deploy_bluegreen.sh && ^
-                    sudo chmod +x                       /opt/%APP_NAME%/scripts/deploy_bluegreen.sh && ^
-                    export IMAGE_FULL=%IMAGE_FULL% && ^
-                    export APP_VERSION=%IMAGE_TAG% && ^
-                    sudo -E /opt/%APP_NAME%/scripts/deploy_bluegreen.sh"
-        """
+                ssh -o StrictHostKeyChecking=no -i %SSH_KEY_FILE% ^
+                    %EC2_USER%@%EC2_HOST% ^
+                    "set -e && sudo apt-get install -y dos2unix -qq && sudo mv /tmp/docker-compose.ec2.yml /opt/%APP_NAME%/docker-compose.ec2.yml && sudo mv /tmp/nginx.conf /opt/%APP_NAME%/docker/nginx.conf && sudo mv /tmp/deploy_bluegreen.sh /opt/%APP_NAME%/scripts/deploy_bluegreen.sh && sudo dos2unix /opt/%APP_NAME%/scripts/deploy_bluegreen.sh && sudo chmod +x /opt/%APP_NAME%/scripts/deploy_bluegreen.sh && export IMAGE_FULL=%IMAGE_FULL% && export APP_VERSION=%IMAGE_TAG% && sudo -E /opt/%APP_NAME%/scripts/deploy_bluegreen.sh"
+"""
                  }
           }
         }
