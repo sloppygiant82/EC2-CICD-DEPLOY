@@ -51,7 +51,7 @@ pipeline{
 
         stage("Deploy to EC2 (Blue/Green)") {
     steps {
-        withCredentials([file(credentialsId: 'ec2-ssh-key', variable: 'SSH_KEY_FILE')]) {
+        withCredentials([file(credentialsId: 'ec2-ssh-key-file', variable: 'SSH_KEY_FILE')]) {
             // Windows Jenkins runs bat with %VAR% for local ssh/scp commands
             bat """
                 ssh -o StrictHostKeyChecking=no -i %SSH_KEY_FILE% %EC2_USER%@%EC2_HOST% "sudo mkdir -p /opt/%APP_NAME%/docker /opt/%APP_NAME%/scripts"
