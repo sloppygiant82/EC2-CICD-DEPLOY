@@ -15,8 +15,8 @@ cd "${APP_DIR}"
 # You can git clone on EC2 OR Jenkins will scp needed files. We keep it simple:
 # We assume docker-compose.ec2.yml and docker/nginx.conf exist in APP_DIR.
 
-if [[ ! -f docker.ec2.yml ]]; then
-    echo "ERROR: docker.ec2.yml not found in ${APP_DIR}"
+if [[ ! -f docker-compose.ec2.yml ]]; then
+    echo "ERROR: docker-compose.ec2.yml not found in ${APP_DIR}"
     exit 1
 fi
 
