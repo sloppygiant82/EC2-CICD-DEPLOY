@@ -48,11 +48,11 @@ for i in {1..10}; do
   fi
   echo "waiting for new slot health... ${i}/10"
   sleep 2
-  if [[ $i -eq 20]]; then
+  if [[ $i -eq 20 ]]; then
     echo "ERROR: New slot did not become healthy"
     exit 1
   fi
-Done
+done
 
 # Swap nginx upstream and reload
 sudo sed -i "s#proxy_pass http://127.0.0.1:808[12];#proxy_pass http://127.0.0.1:${NEW_PORT};#g" "${NGINX_CONF}"
