@@ -50,38 +50,23 @@ pipeline{
         }
 
         stage("Deploy to EC2 (Blue/Green)") {
-            steps {
-                withCredentials([sshUserPrivateKey(
-            credentialsId: 'ec2-ssh-key',
-            keyFileVariable: 'SSH_KEY_FILE',
-            usernameVariable: 'EC2_USER'
-                )])
-                {
-                  sh"""
-                    # Copy runtime files to EC2 (first time + updates)
-                    ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} 'sudo mkdir -p /opt/${APP_NAME}/docker /opt/${APP_NAME}/scripts'
-                    scp -o StrictHostKeyChecking=no cicd-ec2-autodeploy/docker-compose.ec2.yml ${SSH_USER}@${EC2_HOST}:/tmp/docker-compose.ec2.yml
-                    scp -o StrictHostKeyChecking=no cicd-ec2-autodeploy/docker/nginx.conf ${SSH_USER}@${EC2_HOST}:/tmp/nginx.conf
-                    scp -o StrictHostKeyChecking=no cicd-ec2-autodeploy/scripts/deploy_bluegreen.sh ${EC2_USER}@${EC2_HOST}:/tmp/deploy_bluegreen.sh
+    steps {
+        withCredentials([file(credentialsId: 'ec2-ssh-key-file', variable: 'SSH_KEY_FILE')]) {
+            // Windows Jenkins runs bat with %VAR% for local ssh/scp commands
+            bat """
+                ssh -o StrictHostKeyChecking=no -i %SSH_KEY_FILE% %EC2_USER%@%EC2_HOST% "sudo mkdir -p /opt/%APP_NAME%/docker /opt/%APP_NAME%/scripts"
 
-                    ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} '
-                      set -e
-                      sudo mv /tmp/docker-compose.ec2.yml /opt/${APP_NAME}/docker-compose.ec2.yml
-                      sudo mv /tmp/nginx.conf /opt/${APP_NAME}/docker/nginx.conf
-                      sudo mv /tmp/deploy_bluegreen.sh /opt/${APP_NAME}/scripts/deploy_bluegreen.sh
-                      sudo chmod +x /opt/${APP_NAME}/scripts/deploy_bluegreen.sh
+                scp -o StrictHostKeyChecking=no -i %SSH_KEY_FILE% cicd-ec2-autodeploy/docker-compose.ec2.yml %EC2_USER%@%EC2_HOST%:/tmp/docker-compose.ec2.yml
+                scp -o StrictHostKeyChecking=no -i %SSH_KEY_FILE% cicd-ec2-autodeploy/docker/nginx.conf %EC2_USER%@%EC2_HOST%:/tmp/nginx.conf
+                scp -o StrictHostKeyChecking=no -i %SSH_KEY_FILE% cicd-ec2-autodeploy/scripts/deploy_bluegreen.sh %EC2_USER%@%EC2_HOST%:/tmp/deploy_bluegreen.sh
 
-                      # Run deploy
-                      export IMAGE_FULL=${IMAGE_FULL}
-                      export APP_VERSION=${IMAGE_TAG}
-                      sudo -E /opt/${APP_NAME}/scripts/deploy_bluegreen.sh
-                    '
-                  """
-                }
-              }
-            }
+                ssh -o StrictHostKeyChecking=no -i %SSH_KEY_FILE% %EC2_USER%@%EC2_HOST% "set -e && sudo mv /tmp/docker-compose.ec2.yml /opt/%APP_NAME%/docker-compose.ec2.yml && sudo mv /tmp/nginx.conf /opt/%APP_NAME%/docker/nginx.conf && sudo mv /tmp/deploy_bluegreen.sh /opt/%APP_NAME%/scripts/deploy_bluegreen.sh && sudo chmod +x /opt/%APP_NAME%/scripts/deploy_bluegreen.sh && export IMAGE_FULL=%IMAGE_FULL% && export APP_VERSION=%IMAGE_TAG% && sudo -E /opt/%APP_NAME%/scripts/deploy_bluegreen.sh"
+            """
+                 }
           }
-        }               
+        }
+    }
+}               
 
 post{
     always{
