@@ -80,8 +80,7 @@ pipeline{
 
                 ssh -o StrictHostKeyChecking=no -i %SSH_KEY_FILE% ^
                     %EC2_USER%@%EC2_HOST% ^
-                    "set -e && sudo apt-get install -y dos2unix -qq && sudo mv /tmp/docker-compose.ec2.yml /opt/%APP_NAME%/docker-compose.ec2.yml && sudo mv /tmp/nginx.conf /opt/%APP_NAME%/docker/nginx.conf && sudo mv /tmp/deploy_bluegreen.sh /opt/%APP_NAME%/scripts/deploy_bluegreen.sh && sudo dos2unix /opt/%APP_NAME%/scripts/deploy_bluegreen.sh && sudo chmod +x /opt/%APP_NAME%/scripts/deploy_bluegreen.sh && export IMAGE_FULL=%IMAGE_FULL% && export APP_VERSION=%IMAGE_TAG% && sudo -E /opt/%APP_NAME%/scripts/deploy_bluegreen.sh"
-"""
+                    "set -e && sudo apt-get install -y dos2unix -qq && sudo mv /tmp/docker-compose.ec2.yml /opt/%APP_NAME%/docker-compose.ec2.yml && sudo mv /tmp/nginx.conf /opt/%APP_NAME%/docker/nginx.conf && sudo mv /tmp/deploy_bluegreen.sh /opt/%APP_NAME%/scripts/deploy_bluegreen.sh && sudo dos2unix /opt/%APP_NAME%/scripts/deploy_bluegreen.sh && sudo chmod +x /opt/%APP_NAME%/scripts/deploy_bluegreen.sh && sudo IMAGE_FULL=%IMAGE_FULL% APP_VERSION=%IMAGE_TAG% /opt/%APP_NAME%/scripts/deploy_bluegreen.sh"
                  }
           }
         }

@@ -23,9 +23,9 @@ fi
 echo "Pulling image: ${IMAGE_FULL}"
 sudo docker pull "${IMAGE_FULL}"
 
-# Bring up both slots (blue+green) with latest image tag (both run same image, switch decides live traffic)
-export IMAGE_FULL APP_VERSION
-sudo docker compose -f docker-compose.ec2.yml up -d
+# Pass vars explicitly to docker compose
+sudo IMAGE_FULL="${IMAGE_FULL}" APP_VERSION="${APP_VERSION}" \
+    docker compose -f docker-compose.ec2.yml up -d
 
 # Determine currently active upstream in nginx.conf
 ACTIVE_UPSTREAM="$(grep -E 'proxy_pass http://127\.0\.0\.1:808[12];' -o "${NGINX_CONF}" | tail -n 1 || true)"
