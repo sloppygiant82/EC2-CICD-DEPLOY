@@ -13,7 +13,7 @@ services:
 
   # Blue app (port 8081 on host)
   app_blue:
-    image: $(IMAGE_FULL)
+    image: ${IMAGE_FULL}
     container_name: app_blue
     environment:
       - APP_VERSION=${APP_VERSION}
@@ -23,10 +23,10 @@ services:
 
   # Green app(port 8082 on host)
   app_green:
-    image: $(IMAGE_FULL)
+    image: ${IMAGE_FULL}
     container_name: app_green
     environment:
-      - APP_VERSION=$(APP_VERSION)
+      - APP_VERSION=${APP_VERSION}
     ports:
       - "8082:5000"
     restart: always
