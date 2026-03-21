@@ -59,6 +59,8 @@ pipeline{
                 icacls %SSH_KEY_FILE% /grant:r "%USERNAME%:R"
                 icacls %SSH_KEY_FILE% /remove "BUILTIN\\Users"
                 icacls %SSH_KEY_FILE% /remove "Everyone"
+                icacls %SSH_KEY_FILE% /grant:r "SYSTEM:F"
+                icacls %SSH_KEY_FILE% /grant:r "BUILTIN\\Administrators:F"
 
                 ssh -o StrictHostKeyChecking=no -i %SSH_KEY_FILE% %EC2_USER%@%EC2_HOST% "sudo mkdir -p /opt/%APP_NAME%/docker /opt/%APP_NAME%/scripts"
 
