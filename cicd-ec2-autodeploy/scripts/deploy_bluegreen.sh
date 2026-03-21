@@ -30,7 +30,7 @@ sudo IMAGE_FULL="${IMAGE_FULL}" APP_VERSION="${APP_VERSION}" \
 # Determine currently active upstream in nginx.conf
 ACTIVE_UPSTREAM="$(grep -E 'proxy_pass http://127\.0\.0\.1:808[12];' -o "${NGINX_CONF}" | tail -n 1 || true)"
 
-if [[ "${ACTIVE_UPSTREM} == *"8081"*" ]]; then
+if [[ "${ACTIVE_UPSTREAM} == *"8081"*" ]]; then
    NEW_PORT="8082"
    NEW_SLOT="green"
 else
