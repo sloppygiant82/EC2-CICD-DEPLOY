@@ -52,8 +52,14 @@ pipeline{
         stage("Deploy to EC2 (Blue/Green)") {
     steps {
         withCredentials([file(credentialsId: 'ec2-ssh-key-file', variable: 'SSH_KEY_FILE')]) {
+            
             // Windows Jenkins runs bat with %VAR% for local ssh/scp commands
             bat """
+                icacls %SSH_KEY_FILE% /inheritance:r
+                icacls %SSH_KEY_FILE% /grant:r "%USERNAME%:R"
+                icacls %SSH_KEY_FILE% /remove "BUILTIN\\Users"
+                icacls %SSH_KEY_FILE% /remove "Everyone"
+
                 ssh -o StrictHostKeyChecking=no -i %SSH_KEY_FILE% %EC2_USER%@%EC2_HOST% "sudo mkdir -p /opt/%APP_NAME%/docker /opt/%APP_NAME%/scripts"
 
                 scp -o StrictHostKeyChecking=no -i %SSH_KEY_FILE% cicd-ec2-autodeploy/docker-compose.ec2.yml %EC2_USER%@%EC2_HOST%:/tmp/docker-compose.ec2.yml
