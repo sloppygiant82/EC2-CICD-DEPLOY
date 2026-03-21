@@ -5,7 +5,7 @@ set -euo pipefail
 # IMAGE_FULL  (e.g. docker.io/<user>/cicd-ec2-autodeploy:build-123)
 # APP_VERSION (e.g. build-123)
 
-APP_DIR="/opt/cicd-ec2-autodeploy"
+APP_DIR="/opt/cicd-ec2-deploy"
 NGINX_CONF="${APP_DIR}/docker/nginx.conf"
 
 mkdir -p "${APP_DIR}"
