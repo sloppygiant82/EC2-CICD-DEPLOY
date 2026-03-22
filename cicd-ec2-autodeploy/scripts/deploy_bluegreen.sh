@@ -56,7 +56,7 @@ done
 
 # Swap nginx upstream and reload
 sudo sed -i "s#proxy_pass http://127.0.0.1:808[12];#proxy_pass http://127.0.0.1:${NEW_PORT};#g" "${NGINX_CONF}"
-sudo docker exec edge-nginx nginx -s reload
+sudo docker exec nginx nginx -s reload
 
 echo "Deploy complete. Live traffic now on port ${NEW_PORT} via Nginx:80"
 
