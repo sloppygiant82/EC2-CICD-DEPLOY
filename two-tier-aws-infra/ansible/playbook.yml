@@ -1,0 +1,15 @@
+- name: Deploy Two-Tier Flask Application
+  hosts: web
+  become: true
+
+  vars_prompt:
+    - name: db_endpoint
+      prompt: "Enter the RDS database endpoint"
+      private: false
+
+    - name: db_password
+      prompt: "Enter the database password"
+      private: true
+
+  roles:
+    - app

@@ -1,0 +1,51 @@
+- name: Install dependencies
+  yum:
+    name:
+      - python3
+      - python3-pip
+      - git
+      - mariadb
+    state: present
+
+- name: Copy app
+  copy:
+    src: ../../../../app/
+    dest: /home/ec2-user/app
+
+- name: Install Python deps
+  pip:
+    requirements: /home/ec2-user/app/requirements.txt
+    executable: pip3
+
+- name: Create env file
+  copy:
+    dest: /home/ec2-user/app/.env
+    content: |
+      DB_HOST={{ db_endpoint }}
+      DB_USER=admin
+      DB_PASS={{ db_password }}
+
+- name: Create systemd service for the app
+  copy:
+    dest: /etc/systemd/system/two-tier-app.service
+    content: |
+      [Unit]
+      Description=Two Tier Flask App
+      After=network.target
+
+      [Service]
+      User=ec2-user
+      WorkingDirectory=/home/ec2-user/app
+      EnvironmentFile=/home/ec2-user/app/.env
+      ExecStart=/usr/bin/python3 /home/ec2-user/app/app.py
+      Restart=always
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Start and enable app service
+  systemd:
+    name: two-tier-app
+    state: started
+    enabled: true
+    daemon_reload: true
