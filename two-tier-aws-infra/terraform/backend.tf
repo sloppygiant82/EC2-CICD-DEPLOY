@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket       = "aws-two-tier-248965576334-us-east-1-an"
+    bucket       = "" # your bucket name
     key          = "terraform.tfstate"
     region       = "us-east-1"
     use_lockfile = true
